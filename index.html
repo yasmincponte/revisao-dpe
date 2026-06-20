@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#b72b70">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Revisão DPE">
+  <title>Revisão DPE</title>
+  <style>
+:root {
+  --pink-900: #8f1f57;
+  --pink-700: #b72b70;
+  --pink-500: #dc6fa4;
+  --pink-200: #f1b1cd;
+  --pink-100: #fce8f1;
+  --pink-050: #fff8fb;
+  --ink: #382c33;
+  --muted: #74616a;
+  --line: #ead0dc;
+  --white: #fff;
+  --shadow: 0 16px 40px rgba(111, 34, 72, .12);
+}
+
+* { box-sizing: border-box; }
+html { background: var(--pink-050); }
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 100% 0, rgba(241,177,205,.35), transparent 32rem),
+    linear-gradient(180deg, #fff 0, var(--pink-050) 38%, #fff 100%);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+button, textarea { font: inherit; }
+button { -webkit-tap-highlight-color: transparent; }
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: max(1rem, env(safe-area-inset-top)) max(1.2rem, env(safe-area-inset-right)) 1rem max(1.2rem, env(safe-area-inset-left));
+  background: rgba(255,255,255,.88);
+  border-bottom: 1px solid rgba(234,208,220,.8);
+  backdrop-filter: blur(16px);
+}
+.topbar h1 { margin: .15rem 0 0; font-size: 1.25rem; color: var(--pink-900); }
+.eyebrow { margin: 0; color: var(--pink-700); font-weight: 800; font-size: .76rem; letter-spacing: .08em; text-transform: uppercase; }
+
+main { width: min(100%, 760px); margin: 0 auto; padding: 1.25rem 1rem calc(3rem + env(safe-area-inset-bottom)); }
+.view { display: none; }
+.view.active { display: block; animation: enter .25s ease-out; }
+@keyframes enter { from { opacity: 0; transform: translateY(6px); } }
+
+.hero-card, .question-card, .finish-card, .panel {
+  background: rgba(255,255,255,.96);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+}
+.hero-card { padding: clamp(1.4rem, 4vw, 2.3rem); }
+.hero-card h2 { margin: .65rem 0 .75rem; max-width: 18ch; font-size: clamp(1.85rem, 6vw, 2.8rem); line-height: 1.04; color: var(--pink-900); }
+.hero-card > p:not(.eyebrow) { color: var(--muted); line-height: 1.55; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.35rem; }
+
+.primary-button, .secondary-button, .ghost-button, .icon-button, .rating-button {
+  border: 0;
+  border-radius: 14px;
+  cursor: pointer;
+  font-weight: 800;
+  min-height: 48px;
+  padding: .8rem 1.05rem;
+}
+.primary-button { color: #fff; background: linear-gradient(135deg, var(--pink-700), var(--pink-500)); box-shadow: 0 8px 20px rgba(183,43,112,.22); }
+.secondary-button { color: var(--pink-900); background: var(--pink-100); border: 1px solid var(--pink-200); }
+.ghost-button { min-height: 40px; padding: .55rem .75rem; color: var(--muted); background: transparent; }
+.full { width: 100%; }
+.hidden { display: none !important; }
+
+.summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .65rem; margin: 1rem 0; }
+.stat-card { padding: 1rem .65rem; text-align: center; border: 1px solid var(--line); border-radius: 18px; background: #fff; }
+.stat-card strong { display: block; font-size: 1.5rem; color: var(--pink-700); }
+.stat-card span { color: var(--muted); font-size: .76rem; }
+.panel { padding: 1.1rem; box-shadow: none; }
+.panel-heading { display: flex; justify-content: space-between; align-items: center; gap: .7rem; }
+.panel h3 { margin: 0; font-size: 1rem; }
+.saved-badge { color: var(--muted); font-size: .7rem; }
+.subject-summary { display: grid; gap: .7rem; margin-top: 1rem; }
+.subject-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .8rem; align-items: center; }
+.subject-name { font-size: .87rem; font-weight: 700; }
+.subject-score { color: var(--muted); font-size: .8rem; }
+.mini-track { grid-column: 1 / -1; height: 7px; overflow: hidden; border-radius: 99px; background: var(--pink-100); }
+.mini-bar { height: 100%; border-radius: inherit; background: var(--pink-500); }
+
+.quiz-meta { display: flex; align-items: center; gap: .8rem; margin-bottom: 1rem; }
+.icon-button { width: 46px; min-height: 46px; padding: 0; color: var(--pink-900); background: var(--pink-100); font-size: 2rem; line-height: 1; }
+.progress-wrap { flex: 1; }
+.progress-label { display: flex; justify-content: space-between; margin-bottom: .4rem; color: var(--muted); font-size: .78rem; }
+.progress-track { height: 9px; overflow: hidden; border-radius: 99px; background: var(--pink-100); }
+.progress-bar { width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--pink-700), var(--pink-500)); transition: width .25s ease; }
+
+.question-card { padding: clamp(1.25rem, 4vw, 2rem); }
+.subject-badge { display: inline-flex; padding: .42rem .7rem; border-radius: 999px; color: var(--pink-900); background: var(--pink-100); font-size: .76rem; font-weight: 800; }
+.question-card h2 { margin: 1rem 0 1.35rem; font-size: clamp(1.25rem, 4.4vw, 1.65rem); line-height: 1.32; }
+.question-card label { display: block; margin-bottom: .45rem; color: var(--muted); font-size: .78rem; font-weight: 700; }
+textarea { width: 100%; resize: vertical; margin-bottom: 1rem; padding: 1rem; color: var(--ink); border: 1px solid var(--line); border-radius: 16px; background: var(--pink-050); outline: none; line-height: 1.5; }
+textarea:focus { border-color: var(--pink-500); box-shadow: 0 0 0 3px rgba(220,111,164,.13); }
+.answer-panel { margin-top: 1.1rem; padding: 1.1rem; border: 1px solid var(--pink-200); border-radius: 18px; background: var(--pink-050); }
+.answer-label, .rating-prompt { color: var(--pink-900); font-weight: 800; }
+.answer-panel p { line-height: 1.5; }
+.rating-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .55rem; }
+.rating-button { min-height: 52px; padding: .65rem .35rem; }
+.rating-button.wrong { color: #9b3040; background: #fde8eb; }
+.rating-button.unsure { color: #88640f; background: #fff4d7; }
+.rating-button.correct { color: #246a54; background: #e3f5ee; }
+
+.finish-card { padding: 2rem 1.4rem; text-align: center; }
+.finish-card h2 { color: var(--pink-900); font-size: 2rem; }
+.finish-card > p:not(.eyebrow) { color: var(--muted); line-height: 1.5; }
+.finish-score { margin: 1.4rem auto; padding: 1.2rem; max-width: 220px; border-radius: 20px; background: var(--pink-100); }
+.finish-score strong { display: block; color: var(--pink-700); font-size: 2.4rem; }
+.finish-score span { color: var(--muted); font-size: .8rem; }
+.finish-card .secondary-button { margin-top: .75rem; }
+
+@media (max-width: 480px) {
+  .summary-grid { gap: .4rem; }
+  .stat-card { padding-inline: .3rem; }
+  .stat-card strong { font-size: 1.3rem; }
+  .rating-grid { gap: .35rem; }
+}
+
+@media (display-mode: standalone) {
+  .topbar { padding-top: calc(env(safe-area-inset-top) + .7rem); }
+}
+
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">DPE Duo 4h</p>
+      <h1>Revisão semanal</h1>
+    </div>
+    <button id="resetButton" class="ghost-button" type="button">Recomeçar</button>
+  </header>
+
+  <main>
+    <section id="homeView" class="view active">
+      <div class="hero-card">
+        <p class="eyebrow">Revisão 01</p>
+        <h2>Recuperação ativa, sem resumo infinito.</h2>
+        <p>Responda sem consultar, revele o gabarito e classifique sua segurança.</p>
+        <div class="hero-actions">
+          <button id="startButton" class="primary-button" type="button">Começar revisão</button>
+          <button id="retryButton" class="secondary-button hidden" type="button">Revisar erros</button>
+        </div>
+      </div>
+
+      <div class="summary-grid">
+        <article class="stat-card"><strong id="totalQuestions">28</strong><span>questões</span></article>
+        <article class="stat-card"><strong id="answeredCount">0</strong><span>respondidas</span></article>
+        <article class="stat-card"><strong id="accuracyValue">—</strong><span>acertos seguros</span></article>
+      </div>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <h3>Desempenho por matéria</h3>
+          <span id="savedBadge" class="saved-badge">salvo no aparelho</span>
+        </div>
+        <div id="subjectSummary" class="subject-summary"></div>
+      </section>
+    </section>
+
+    <section id="quizView" class="view">
+      <div class="quiz-meta">
+        <button id="backButton" class="icon-button" type="button" aria-label="Voltar para o início">‹</button>
+        <div class="progress-wrap">
+          <div class="progress-label"><span id="progressText"></span><span id="progressPercent"></span></div>
+          <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+        </div>
+      </div>
+
+      <article class="question-card">
+        <span id="subjectBadge" class="subject-badge"></span>
+        <h2 id="questionText"></h2>
+        <label for="answerInput">Sua resposta</label>
+        <textarea id="answerInput" rows="6" placeholder="Escreva com suas palavras..."></textarea>
+        <button id="revealButton" class="primary-button full" type="button">Ver gabarito</button>
+
+        <div id="answerPanel" class="answer-panel hidden">
+          <p class="answer-label">Gabarito comentado</p>
+          <p id="answerText"></p>
+          <p class="rating-prompt">Como foi?</p>
+          <div class="rating-grid">
+            <button class="rating-button wrong" data-rating="wrong" type="button">Errei</button>
+            <button class="rating-button unsure" data-rating="unsure" type="button">Hesitei</button>
+            <button class="rating-button correct" data-rating="correct" type="button">Acertei</button>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section id="finishView" class="view">
+      <div class="finish-card">
+        <p class="eyebrow">Rodada concluída</p>
+        <h2 id="finishTitle">Boa revisão.</h2>
+        <p id="finishText"></p>
+        <div class="finish-score"><strong id="finishScore"></strong><span>acertos seguros</span></div>
+        <button id="finishHomeButton" class="primary-button full" type="button">Ver meu desempenho</button>
+        <button id="finishRetryButton" class="secondary-button full hidden" type="button">Revisar erros e hesitações</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+const REVIEW_QUESTIONS = [
+  {
+    "id": "q01",
+    "subject": "Direito Civil",
+    "question": "1. Diferencie emancipação voluntária, judicial e legal. A emancipação antecipa a maioridade ou apenas a capacidade civil plena?",
+    "answer": "A voluntária é concedida pelos pais por instrumento público; a judicial depende de sentença, normalmente quando o menor está sob tutela; a legal decorre diretamente das hipóteses previstas no Código Civil. Ela antecipa a capacidade civil plena, não a maioridade cronológica."
+  },
+  {
+    "id": "q02",
+    "subject": "Direito Civil",
+    "question": "2. Qual é a diferença central entre a teoria maior e a teoria menor da desconsideração da personalidade jurídica?",
+    "answer": "A teoria maior exige abuso da personalidade, caracterizado por desvio de finalidade ou confusão patrimonial. A teoria menor admite a desconsideração quando a personalidade jurídica se torna obstáculo ao ressarcimento, nas hipóteses legais específicas."
+  },
+  {
+    "id": "q03",
+    "subject": "Direito Civil",
+    "question": "3. O que significa a teoria da actio nata em sua vertente subjetiva?",
+    "answer": "O prazo prescricional começa quando o titular adquire conhecimento suficiente da violação, de sua extensão relevante e de quem a causou, e não necessariamente na data material do fato."
+  },
+  {
+    "id": "q04",
+    "subject": "Direito Civil",
+    "question": "4. Diferencie cláusula penal e arras, indicando uma função típica de cada instituto.",
+    "answer": "A cláusula penal prefixa consequências do inadimplemento ou da mora. As arras são entregues na formação do contrato e podem confirmar o negócio, funcionar como princípio de pagamento ou disciplinar arrependimento, conforme a modalidade."
+  },
+  {
+    "id": "q05",
+    "subject": "Direito Constitucional",
+    "question": "5. No controle abstrato, o STF fica vinculado ao pedido? E aos fundamentos jurídicos apresentados pelo autor?",
+    "answer": "Fica vinculado ao pedido, mas não aos fundamentos jurídicos. A causa de pedir é aberta, permitindo o exame da constitucionalidade por fundamentos diversos dos apresentados."
+  },
+  {
+    "id": "q06",
+    "subject": "Direito Constitucional",
+    "question": "6. Existe hierarquia geral entre lei complementar e lei ordinária? O que define a espécie legislativa adequada?",
+    "answer": "Não existe hierarquia geral. A Constituição reserva determinadas matérias à lei complementar; fora dessas reservas, a matéria pode ser tratada por lei ordinária."
+  },
+  {
+    "id": "q07",
+    "subject": "Direito Constitucional",
+    "question": "7. Diferencie discriminação direta e indireta.",
+    "answer": "A direta estabelece tratamento desfavorável explicitamente fundado em critério discriminatório. A indireta nasce de regra aparentemente neutra que produz impacto desproporcional sobre grupo vulnerabilizado."
+  },
+  {
+    "id": "q08",
+    "subject": "Direito Constitucional",
+    "question": "8. Quais ideias ajudam a identificar o constitucionalismo latino-americano plurinacional?",
+    "answer": "Reconhecimento de povos originários, pluralismo jurídico, interculturalidade, participação comunitária e superação da visão estatal monocultural são elementos recorrentes."
+  },
+  {
+    "id": "q09",
+    "subject": "Direito da Criança e do Adolescente",
+    "question": "9. Quais medidas socioeducativas podem ser aplicadas ao adolescente autor de ato infracional?",
+    "answer": "Advertência, obrigação de reparar o dano, prestação de serviços à comunidade, liberdade assistida, semiliberdade, internação e medidas protetivas legalmente cabíveis."
+  },
+  {
+    "id": "q10",
+    "subject": "Direito da Criança e do Adolescente",
+    "question": "10. Quais princípios limitam a aplicação da internação?",
+    "answer": "Excepcionalidade, brevidade e respeito à condição peculiar de pessoa em desenvolvimento, além das hipóteses legais específicas e da reavaliação periódica."
+  },
+  {
+    "id": "q11",
+    "subject": "Direito da Criança e do Adolescente",
+    "question": "11. Diferencie guarda, tutela e adoção como formas de colocação em família substituta.",
+    "answer": "A guarda regulariza a posse de fato e impõe deveres de assistência; a tutela pressupõe perda ou suspensão do poder familiar e confere representação; a adoção constitui novo vínculo de filiação, com efeitos pessoais e sucessórios."
+  },
+  {
+    "id": "q12",
+    "subject": "Direito da Criança e do Adolescente",
+    "question": "12. Certo ou errado: a destituição do poder familiar pode ser tratada como consequência automática da pobreza da família.",
+    "answer": "Errado. A carência de recursos materiais, isoladamente, não autoriza perda ou suspensão do poder familiar; devem ser buscadas medidas de apoio e proteção."
+  },
+  {
+    "id": "q13",
+    "subject": "Direitos Humanos",
+    "question": "13. Diferencie relatores especiais da ONU e comitês de tratados (treaty bodies).",
+    "answer": "Relatores especiais são mecanismos temáticos ou por país, vinculados ao sistema de procedimentos especiais. Comitês são órgãos de especialistas criados por tratados e monitoram o cumprimento das obrigações convencionais."
+  },
+  {
+    "id": "q14",
+    "subject": "Direitos Humanos",
+    "question": "14. O que é o Incidente de Deslocamento de Competência e quem pode suscitá-lo?",
+    "answer": "É instrumento para deslocar à Justiça Federal apuração ou julgamento relacionado a grave violação de direitos humanos, visando assegurar obrigações internacionais. É suscitado pelo Procurador-Geral da República perante o STJ."
+  },
+  {
+    "id": "q15",
+    "subject": "Direitos Humanos",
+    "question": "15. Como se distingue a hierarquia dos tratados de direitos humanos aprovados pelo rito do art. 5º, §3º, daqueles aprovados pelo rito ordinário?",
+    "answer": "Os aprovados pelo rito qualificado equivalem a emenda constitucional. Os aprovados pelo rito ordinário possuem, segundo o STF, status supralegal."
+  },
+  {
+    "id": "q16",
+    "subject": "Direitos Humanos",
+    "question": "16. Qual é a função das recomendações gerais dos comitês internacionais, como a Recomendação Geral nº 35 da CEDAW?",
+    "answer": "Elas interpretam e densificam as obrigações do tratado, orientando os Estados sobre medidas de prevenção, proteção, investigação, responsabilização e reparação."
+  },
+  {
+    "id": "q17",
+    "subject": "Direito Penal",
+    "question": "17. Quais critérios legais orientam a distinção entre porte para consumo e tráfico de drogas?",
+    "answer": "Natureza e quantidade da substância, local e condições da ação, circunstâncias sociais e pessoais, conduta e antecedentes, avaliados em conjunto."
+  },
+  {
+    "id": "q18",
+    "subject": "Direito Penal",
+    "question": "18. Quais requisitos devem coexistir para o reconhecimento do tráfico privilegiado?",
+    "answer": "Primariedade, bons antecedentes, não dedicação a atividades criminosas e não integração em organização criminosa."
+  },
+  {
+    "id": "q19",
+    "subject": "Direito Penal",
+    "question": "19. Organize as três fases da dosimetria da pena.",
+    "answer": "Primeira: pena-base pelas circunstâncias judiciais. Segunda: agravantes e atenuantes. Terceira: causas de aumento e de diminuição."
+  },
+  {
+    "id": "q20",
+    "subject": "Direito Penal",
+    "question": "20. A quantidade de pena aplicada é o único critério para fixar o regime inicial?",
+    "answer": "Não. Também importam reincidência, circunstâncias judiciais e fundamentação concreta, observadas as regras do Código Penal e a jurisprudência aplicável."
+  },
+  {
+    "id": "q21",
+    "subject": "Direito Processual Penal",
+    "question": "21. Qual é a função do juiz das garantias e em que fase ele atua?",
+    "answer": "Controlar a legalidade da investigação e proteger direitos individuais na fase investigatória, sem atuar na instrução e no julgamento do mérito."
+  },
+  {
+    "id": "q22",
+    "subject": "Direito Processual Penal",
+    "question": "22. O procedimento do art. 226 do CPP para reconhecimento de pessoas é mera recomendação?",
+    "answer": "Não. A jurisprudência consolidada exige observância das garantias do procedimento e controle de confiabilidade; reconhecimento irregular não deve, sozinho, sustentar condenação."
+  },
+  {
+    "id": "q23",
+    "subject": "Direito Processual Penal",
+    "question": "23. O que é fishing expedition e por que ela é incompatível com um processo penal acusatório?",
+    "answer": "É busca exploratória e genérica por provas, sem delimitação objetiva e justa causa prévia. Inverte a lógica investigativa e amplia indevidamente a intervenção estatal."
+  },
+  {
+    "id": "q24",
+    "subject": "Direito Processual Penal",
+    "question": "24. Diferencie encontro fortuito de provas (serendipidade) e desvio de finalidade na execução de uma medida probatória.",
+    "answer": "Na serendipidade, prova de fato diverso surge fortuitamente durante medida válida. No desvio de finalidade, a medida é usada deliberadamente para investigar objeto estranho sem a autorização e os requisitos próprios."
+  },
+  {
+    "id": "q25",
+    "subject": "Direito Processual Civil",
+    "question": "25. Segundo o art. 186 do CPC, quais prerrogativas processuais são asseguradas à Defensoria Pública quanto aos prazos e às intimações?",
+    "answer": "Prazo em dobro para todas as manifestações processuais e intimação pessoal, mediante carga, remessa ou meio eletrônico, ressalvadas as hipóteses legais em que a lei estabelece prazo próprio."
+  },
+  {
+    "id": "q26",
+    "subject": "Direito Processual Civil",
+    "question": "26. Qual é a função do amicus curiae no art. 138 do CPC e a sua admissão altera a competência do juízo?",
+    "answer": "O amicus fornece subsídios relevantes ao julgamento em razão da matéria, especificidade do tema ou repercussão social. Sua intervenção não altera a competência e, em regra, não autoriza todos os recursos, observadas as exceções legais."
+  },
+  {
+    "id": "q27",
+    "subject": "Direito Processual Civil",
+    "question": "27. Na Meta 2, o que significa constitucionalização do processo civil e qual é a diferença entre contraditório formal e substancial?",
+    "answer": "Constitucionalização é interpretar e aplicar o processo a partir dos direitos fundamentais. O contraditório formal assegura ciência e manifestação; o substancial exige possibilidade real de influência e impede decisões-surpresa."
+  },
+  {
+    "id": "q28",
+    "subject": "Direito Processual Civil",
+    "question": "28. Como os métodos adequados de solução de conflitos e a função social do processo aparecem no tópico 2 do Ponto 1?",
+    "answer": "O CPC adota um sistema multiportas e incentiva soluções consensuais adequadas ao conflito. A função social orienta o processo para tutela efetiva, acesso à justiça e produção de resultados socialmente justos, não para formalismo vazio."
+  }
+];
+
+  </script>
+  <script>
+const STORAGE_KEY = "yasmin-dpe-review-v1";
+
+const state = {
+  mode: "all",
+  queue: [],
+  index: 0,
+  results: {},
+  drafts: {},
+};
+
+const views = {
+  home: document.querySelector("#homeView"),
+  quiz: document.querySelector("#quizView"),
+  finish: document.querySelector("#finishView"),
+};
+
+const $ = (selector) => document.querySelector(selector);
+
+function loadState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (saved?.results) state.results = saved.results;
+    if (saved?.drafts) state.drafts = saved.drafts;
+  } catch (_) {}
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ results: state.results, drafts: state.drafts }));
+}
+
+function showView(name) {
+  Object.entries(views).forEach(([key, view]) => view.classList.toggle("active", key === name));
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function startQuiz(mode = "all") {
+  state.mode = mode;
+  state.queue = mode === "retry"
+    ? REVIEW_QUESTIONS.filter((q) => ["wrong", "unsure"].includes(state.results[q.id]))
+    : [...REVIEW_QUESTIONS];
+  const firstUnanswered = state.queue.findIndex((q) => !state.results[q.id]);
+  state.index = mode === "all" && firstUnanswered >= 0 ? firstUnanswered : 0;
+  if (!state.queue.length) return;
+  showView("quiz");
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const question = state.queue[state.index];
+  const answered = state.index;
+  const percent = Math.round((answered / state.queue.length) * 100);
+  $("#progressText").textContent = `${state.index + 1} de ${state.queue.length}`;
+  $("#progressPercent").textContent = `${percent}%`;
+  $("#progressBar").style.width = `${percent}%`;
+  $("#subjectBadge").textContent = question.subject;
+  $("#questionText").textContent = question.question;
+  $("#answerText").textContent = question.answer;
+  $("#answerInput").value = state.drafts[question.id] || "";
+  $("#answerPanel").classList.add("hidden");
+  $("#revealButton").classList.remove("hidden");
+  $("#answerInput").disabled = false;
+}
+
+function revealAnswer() {
+  const question = state.queue[state.index];
+  state.drafts[question.id] = $("#answerInput").value.trim();
+  saveState();
+  $("#answerPanel").classList.remove("hidden");
+  $("#revealButton").classList.add("hidden");
+  $("#answerInput").disabled = true;
+  $("#answerPanel").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function rateAnswer(rating) {
+  const question = state.queue[state.index];
+  state.results[question.id] = rating;
+  saveState();
+  if (state.index < state.queue.length - 1) {
+    state.index += 1;
+    renderQuestion();
+  } else {
+    finishQuiz();
+  }
+}
+
+function finishQuiz() {
+  const ratings = state.queue.map((q) => state.results[q.id]);
+  const correct = ratings.filter((r) => r === "correct").length;
+  const retryCount = ratings.filter((r) => r === "wrong" || r === "unsure").length;
+  $("#finishScore").textContent = `${correct}/${state.queue.length}`;
+  $("#finishText").textContent = retryCount
+    ? `Você separou ${retryCount} questão${retryCount === 1 ? "" : "ões"} para uma rodada de reforço.`
+    : "Nenhum erro ou hesitação nesta rodada.";
+  $("#finishRetryButton").classList.toggle("hidden", retryCount === 0);
+  showView("finish");
+}
+
+function renderHome() {
+  const answered = Object.keys(state.results).length;
+  const correct = Object.values(state.results).filter((r) => r === "correct").length;
+  const retry = Object.values(state.results).filter((r) => r === "wrong" || r === "unsure").length;
+  $("#totalQuestions").textContent = REVIEW_QUESTIONS.length;
+  $("#answeredCount").textContent = answered;
+  $("#accuracyValue").textContent = answered ? `${Math.round((correct / answered) * 100)}%` : "—";
+  $("#startButton").textContent = answered ? "Continuar revisão" : "Começar revisão";
+  $("#retryButton").classList.toggle("hidden", retry === 0);
+
+  const subjects = [...new Set(REVIEW_QUESTIONS.map((q) => q.subject))];
+  $("#subjectSummary").innerHTML = subjects.map((subject) => {
+    const questions = REVIEW_QUESTIONS.filter((q) => q.subject === subject);
+    const subjectResults = questions.map((q) => state.results[q.id]).filter(Boolean);
+    const subjectCorrect = subjectResults.filter((r) => r === "correct").length;
+    const percent = subjectResults.length ? Math.round((subjectCorrect / subjectResults.length) * 100) : 0;
+    return `<div class="subject-row">
+      <span class="subject-name">${subject}</span>
+      <span class="subject-score">${subjectResults.length}/${questions.length} feitas</span>
+      <div class="mini-track"><div class="mini-bar" style="width:${percent}%"></div></div>
+    </div>`;
+  }).join("");
+}
+
+function goHome() {
+  renderHome();
+  showView("home");
+}
+
+function resetProgress() {
+  if (!window.confirm("Apagar todas as respostas e recomeçar a revisão?")) return;
+  state.results = {};
+  state.drafts = {};
+  localStorage.removeItem(STORAGE_KEY);
+  goHome();
+}
+
+$("#startButton").addEventListener("click", () => startQuiz("all"));
+$("#retryButton").addEventListener("click", () => startQuiz("retry"));
+$("#revealButton").addEventListener("click", revealAnswer);
+$("#backButton").addEventListener("click", goHome);
+$("#finishHomeButton").addEventListener("click", goHome);
+$("#finishRetryButton").addEventListener("click", () => startQuiz("retry"));
+$("#resetButton").addEventListener("click", resetProgress);
+document.querySelectorAll(".rating-button").forEach((button) => button.addEventListener("click", () => rateAnswer(button.dataset.rating)));
+$("#answerInput").addEventListener("input", (event) => {
+  const question = state.queue[state.index];
+  if (!question) return;
+  state.drafts[question.id] = event.target.value;
+  saveState();
+});
+
+loadState();
+renderHome();
+
+
+  </script>
+</body>
+</html>
