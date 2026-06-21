@@ -34,7 +34,7 @@ body {
     linear-gradient(180deg, #fff 0, var(--pink-050) 38%, #fff 100%);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
-button, textarea { font: inherit; }
+button, input { font: inherit; }
 button { -webkit-tap-highlight-color: transparent; }
 
 .topbar {
@@ -69,7 +69,7 @@ main { width: min(100%, 760px); margin: 0 auto; padding: 1.25rem 1rem calc(3rem 
 .hero-card > p:not(.eyebrow) { color: var(--muted); line-height: 1.55; }
 .hero-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.35rem; }
 
-.primary-button, .secondary-button, .ghost-button, .icon-button, .rating-button {
+.primary-button, .secondary-button, .ghost-button, .icon-button {
   border: 0;
   border-radius: 14px;
   cursor: pointer;
@@ -108,17 +108,25 @@ main { width: min(100%, 760px); margin: 0 auto; padding: 1.25rem 1rem calc(3rem 
 .question-card { padding: clamp(1.25rem, 4vw, 2rem); }
 .subject-badge { display: inline-flex; padding: .42rem .7rem; border-radius: 999px; color: var(--pink-900); background: var(--pink-100); font-size: .76rem; font-weight: 800; }
 .question-card h2 { margin: 1rem 0 1.35rem; font-size: clamp(1.25rem, 4.4vw, 1.65rem); line-height: 1.32; }
-.question-card label { display: block; margin-bottom: .45rem; color: var(--muted); font-size: .78rem; font-weight: 700; }
-textarea { width: 100%; resize: vertical; margin-bottom: 1rem; padding: 1rem; color: var(--ink); border: 1px solid var(--line); border-radius: 16px; background: var(--pink-050); outline: none; line-height: 1.5; }
-textarea:focus { border-color: var(--pink-500); box-shadow: 0 0 0 3px rgba(220,111,164,.13); }
+.choices-list { display: grid; gap: .7rem; margin: 0 0 1rem; padding: 0; border: 0; }
+.choices-list legend { margin-bottom: .65rem; color: var(--muted); font-size: .8rem; font-weight: 800; }
+.choice-card { display: grid; grid-template-columns: 2.2rem 1fr; gap: .75rem; align-items: center; min-height: 58px; padding: .75rem .85rem; border: 1px solid var(--line); border-radius: 16px; background: var(--pink-050); cursor: pointer; transition: border-color .15s ease, background .15s ease, transform .15s ease; }
+.choice-card:has(input:checked) { border-color: var(--pink-500); background: var(--pink-100); box-shadow: 0 0 0 3px rgba(220,111,164,.12); }
+.choice-card:active { transform: scale(.99); }
+.choice-card input { position: absolute; opacity: 0; pointer-events: none; }
+.choice-letter { display: grid; place-items: center; width: 2.2rem; height: 2.2rem; border: 1px solid var(--pink-200); border-radius: 50%; color: var(--pink-900); background: #fff; font-weight: 900; }
+.choice-text { color: var(--ink); font-size: .94rem; font-weight: 600; line-height: 1.38; }
+.choice-card.is-correct { border-color: #75b89f; background: #e3f5ee; box-shadow: none; }
+.choice-card.is-correct .choice-letter { color: #246a54; border-color: #75b89f; }
+.choice-card.is-wrong { border-color: #e19aa4; background: #fde8eb; box-shadow: none; }
+.choice-card.is-wrong .choice-letter { color: #9b3040; border-color: #e19aa4; }
+.choice-hint { min-height: 1.25rem; margin: -.35rem 0 .75rem; color: #9b3040; font-size: .82rem; font-weight: 700; }
 .answer-panel { margin-top: 1.1rem; padding: 1.1rem; border: 1px solid var(--pink-200); border-radius: 18px; background: var(--pink-050); }
-.answer-label, .rating-prompt { color: var(--pink-900); font-weight: 800; }
+.answer-label { color: var(--pink-900); font-weight: 800; }
+.answer-result { margin-top: 0; font-size: 1.05rem; font-weight: 900; }
+.answer-result.correct { color: #246a54; }
+.answer-result.wrong { color: #9b3040; }
 .answer-panel p { line-height: 1.5; }
-.rating-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .55rem; }
-.rating-button { min-height: 52px; padding: .65rem .35rem; }
-.rating-button.wrong { color: #9b3040; background: #fde8eb; }
-.rating-button.unsure { color: #88640f; background: #fff4d7; }
-.rating-button.correct { color: #246a54; background: #e3f5ee; }
 
 .finish-card { padding: 2rem 1.4rem; text-align: center; }
 .finish-card h2 { color: var(--pink-900); font-size: 2rem; }
@@ -132,7 +140,7 @@ textarea:focus { border-color: var(--pink-500); box-shadow: 0 0 0 3px rgba(220,1
   .summary-grid { gap: .4rem; }
   .stat-card { padding-inline: .3rem; }
   .stat-card strong { font-size: 1.3rem; }
-  .rating-grid { gap: .35rem; }
+  .choice-card { padding-inline: .7rem; }
 }
 
 @media (display-mode: standalone) {
@@ -155,7 +163,7 @@ textarea:focus { border-color: var(--pink-500); box-shadow: 0 0 0 3px rgba(220,1
       <div class="hero-card">
         <p class="eyebrow">Revisão 01</p>
         <h2>Recuperação ativa, sem resumo infinito.</h2>
-        <p>Responda sem consultar, revele o gabarito e classifique sua segurança.</p>
+        <p>Marque uma alternativa, corrija na hora e revise apenas o que errar.</p>
         <div class="hero-actions">
           <button id="startButton" class="primary-button" type="button">Começar revisão</button>
           <button id="retryButton" class="secondary-button hidden" type="button">Revisar erros</button>
@@ -189,19 +197,17 @@ textarea:focus { border-color: var(--pink-500); box-shadow: 0 0 0 3px rgba(220,1
       <article class="question-card">
         <span id="subjectBadge" class="subject-badge"></span>
         <h2 id="questionText"></h2>
-        <label for="answerInput">Sua resposta</label>
-        <textarea id="answerInput" rows="6" placeholder="Escreva com suas palavras..."></textarea>
-        <button id="revealButton" class="primary-button full" type="button">Ver gabarito</button>
+        <fieldset id="choicesList" class="choices-list">
+          <legend>Marque uma alternativa</legend>
+        </fieldset>
+        <p id="choiceHint" class="choice-hint" aria-live="polite"></p>
+        <button id="checkButton" class="primary-button full" type="button">Corrigir resposta</button>
 
         <div id="answerPanel" class="answer-panel hidden">
-          <p class="answer-label">Gabarito comentado</p>
+          <p id="answerResult" class="answer-result"></p>
+          <p class="answer-label">Comentário</p>
           <p id="answerText"></p>
-          <p class="rating-prompt">Como foi?</p>
-          <div class="rating-grid">
-            <button class="rating-button wrong" data-rating="wrong" type="button">Errei</button>
-            <button class="rating-button unsure" data-rating="unsure" type="button">Hesitei</button>
-            <button class="rating-button correct" data-rating="correct" type="button">Acertei</button>
-          </div>
+          <button id="nextButton" class="primary-button full" type="button">Próxima questão</button>
         </div>
       </article>
     </section>
@@ -390,16 +396,273 @@ const REVIEW_QUESTIONS = [
   }
 ];
 
+const REVIEW_OPTIONS = {
+  q01: {
+    correctIndex: 1,
+    options: [
+      "Todas dependem de sentença judicial e antecipam a maioridade cronológica.",
+      "A voluntária vem dos pais, a judicial de sentença e a legal da lei; antecipam a capacidade plena, não a idade.",
+      "A voluntária e a legal dependem dos pais; a judicial decorre automaticamente da lei.",
+      "Somente a emancipação legal produz capacidade civil plena."
+    ]
+  },
+  q02: {
+    correctIndex: 2,
+    options: [
+      "A teoria maior vale apenas no direito público e a menor apenas no direito privado.",
+      "A teoria menor exige fraude; a maior exige somente inadimplemento.",
+      "A maior exige abuso, como desvio de finalidade ou confusão patrimonial; a menor pode bastar-se no obstáculo ao ressarcimento previsto em lei.",
+      "Não há diferença prática entre as duas teorias."
+    ]
+  },
+  q03: {
+    correctIndex: 0,
+    options: [
+      "A prescrição começa com o conhecimento suficiente da violação, de sua extensão relevante e de seu causador.",
+      "A prescrição começa sempre na data objetiva do fato, mesmo que a vítima o desconheça.",
+      "A prescrição só começa após decisão judicial definitiva.",
+      "A pretensão nasce apenas quando o devedor reconhece a dívida."
+    ]
+  },
+  q04: {
+    correctIndex: 3,
+    options: [
+      "Ambas servem exclusivamente para permitir arrependimento sem consequências.",
+      "A cláusula penal confirma o contrato; as arras sempre substituem perdas e danos.",
+      "As arras só existem após o inadimplemento, enquanto a cláusula penal é entregue na formação do contrato.",
+      "A cláusula penal prefixa consequências do inadimplemento; as arras são entregues na formação do contrato e podem confirmá-lo ou disciplinar arrependimento."
+    ]
+  },
+  q05: {
+    correctIndex: 1,
+    options: [
+      "O STF não se vincula ao pedido nem aos fundamentos.",
+      "O STF se vincula ao pedido, mas não aos fundamentos jurídicos, pois a causa de pedir é aberta.",
+      "O STF se vincula somente aos fundamentos, mas pode ampliar o pedido.",
+      "O STF se vincula integralmente ao pedido e aos fundamentos do autor."
+    ]
+  },
+  q06: {
+    correctIndex: 2,
+    options: [
+      "A lei complementar sempre prevalece sobre a lei ordinária por hierarquia.",
+      "A espécie legislativa é escolhida livremente pelo Congresso.",
+      "Não há hierarquia geral; a Constituição define as matérias reservadas à lei complementar.",
+      "Toda matéria de direitos fundamentais exige lei complementar."
+    ]
+  },
+  q07: {
+    correctIndex: 0,
+    options: [
+      "A direta usa critério discriminatório explícito; a indireta decorre de regra neutra com impacto desproporcional.",
+      "A direta exige intenção; a indireta só existe quando prevista em lei.",
+      "A direta ocorre entre particulares e a indireta apenas em atos estatais.",
+      "A indireta é sempre lícita porque a regra é formalmente neutra."
+    ]
+  },
+  q08: {
+    correctIndex: 3,
+    options: [
+      "Centralização estatal, monismo jurídico e uniformidade cultural.",
+      "Separação absoluta entre Estado e comunidades tradicionais.",
+      "Supremacia exclusiva do direito legislado sobre costumes e tradições.",
+      "Povos originários, pluralismo jurídico, interculturalidade e participação comunitária."
+    ]
+  },
+  q09: {
+    correctIndex: 1,
+    options: [
+      "Apenas advertência, liberdade assistida e internação.",
+      "Advertência, reparação do dano, serviços à comunidade, liberdade assistida, semiliberdade, internação e medidas protetivas cabíveis.",
+      "As mesmas penas previstas no Código Penal para adultos.",
+      "Somente medidas protetivas, pois adolescentes não recebem medidas socioeducativas."
+    ]
+  },
+  q10: {
+    correctIndex: 2,
+    options: [
+      "Publicidade, oralidade e identidade física do juiz.",
+      "Automaticidade, duração indeterminada e gravidade abstrata.",
+      "Excepcionalidade, brevidade e respeito à condição peculiar de pessoa em desenvolvimento.",
+      "Livre convencimento, fungibilidade e disponibilidade."
+    ]
+  },
+  q11: {
+    correctIndex: 0,
+    options: [
+      "A guarda regulariza a posse e impõe assistência; a tutela pressupõe perda ou suspensão do poder familiar; a adoção cria vínculo de filiação.",
+      "Guarda, tutela e adoção rompem sempre e imediatamente os vínculos anteriores.",
+      "A tutela apenas regulariza posse de fato e nunca confere representação.",
+      "A adoção é revogável e não produz efeitos sucessórios."
+    ]
+  },
+  q12: {
+    correctIndex: 1,
+    options: [
+      "Certo, porque a falta de recursos presume abandono material.",
+      "Errado, pois a pobreza isoladamente não autoriza a destituição e exige medidas de apoio e proteção.",
+      "Certo, desde que haja pedido do Conselho Tutelar.",
+      "Errado, mas apenas quando a criança tiver menos de doze anos."
+    ]
+  },
+  q13: {
+    correctIndex: 3,
+    options: [
+      "Ambos são tribunais internacionais com poder de anular leis nacionais.",
+      "Relatores são criados exclusivamente por tratados; comitês são órgãos políticos temporários.",
+      "Comitês atuam por país; relatores monitoram somente um tratado específico.",
+      "Relatores integram procedimentos especiais temáticos ou por país; comitês são órgãos de especialistas criados por tratados."
+    ]
+  },
+  q14: {
+    correctIndex: 0,
+    options: [
+      "É o deslocamento para a Justiça Federal em grave violação de direitos humanos, suscitado pelo PGR perante o STJ.",
+      "É recurso ao STF apresentado pela vítima contra decisão estadual.",
+      "É a transferência automática de qualquer crime contra a vida para a Justiça Federal.",
+      "É medida provocada pelo Defensor Público-Geral perante o CNJ."
+    ]
+  },
+  q15: {
+    correctIndex: 2,
+    options: [
+      "Todos os tratados de direitos humanos têm nível de emenda constitucional.",
+      "Os aprovados pelo rito qualificado são supralegais; os ordinários têm nível de lei comum.",
+      "Os aprovados pelo art. 5º, §3º equivalem a emenda; os aprovados pelo rito ordinário têm status supralegal segundo o STF.",
+      "Os tratados aprovados pelo rito ordinário ficam abaixo das leis federais."
+    ]
+  },
+  q16: {
+    correctIndex: 1,
+    options: [
+      "Criar novos tratados sem consentimento dos Estados.",
+      "Interpretar e densificar obrigações do tratado, orientando prevenção, proteção, investigação, responsabilização e reparação.",
+      "Substituir as decisões dos tribunais nacionais em qualquer processo.",
+      "Aplicar sanções penais diretamente aos agentes estatais."
+    ]
+  },
+  q17: {
+    correctIndex: 3,
+    options: [
+      "Somente a quantidade da substância apreendida.",
+      "Exclusivamente os antecedentes do agente.",
+      "A confissão e o local da prisão, sem consideração de outros elementos.",
+      "Natureza e quantidade, local e condições, circunstâncias sociais e pessoais, conduta e antecedentes, avaliados em conjunto."
+    ]
+  },
+  q18: {
+    correctIndex: 0,
+    options: [
+      "Primariedade, bons antecedentes, não dedicação criminosa e não integração em organização criminosa.",
+      "Confissão, pequena quantidade de droga e residência fixa.",
+      "Primariedade ou bons antecedentes, alternativamente.",
+      "Ausência de violência e colaboração premiada."
+    ]
+  },
+  q19: {
+    correctIndex: 2,
+    options: [
+      "Primeira: agravantes; segunda: pena-base; terceira: regime inicial.",
+      "Primeira: causas de aumento; segunda: circunstâncias judiciais; terceira: atenuantes.",
+      "Primeira: pena-base; segunda: agravantes e atenuantes; terceira: causas de aumento e diminuição.",
+      "Primeira: tipicidade; segunda: ilicitude; terceira: culpabilidade."
+    ]
+  },
+  q20: {
+    correctIndex: 1,
+    options: [
+      "Sim, o regime decorre matematicamente apenas da pena aplicada.",
+      "Não; também contam reincidência, circunstâncias judiciais e fundamentação concreta.",
+      "Não; o juiz pode escolher qualquer regime sem fundamentação.",
+      "Sim, salvo quando o Ministério Público pedir regime diferente."
+    ]
+  },
+  q21: {
+    correctIndex: 0,
+    options: [
+      "Controlar a legalidade da investigação e proteger direitos na fase investigatória, sem julgar o mérito.",
+      "Presidir o inquérito e oferecer a denúncia.",
+      "Atuar apenas na execução da pena.",
+      "Conduzir a investigação e depois sentenciar o processo."
+    ]
+  },
+  q22: {
+    correctIndex: 2,
+    options: [
+      "Sim, é uma sugestão sem efeito sobre a validade da prova.",
+      "Sim, desde que a vítima demonstre certeza no reconhecimento.",
+      "Não; exige-se observância das garantias e controle de confiabilidade, e o reconhecimento irregular não sustenta sozinho a condenação.",
+      "Não, porque o reconhecimento de pessoas é sempre prova ilícita."
+    ]
+  },
+  q23: {
+    correctIndex: 1,
+    options: [
+      "É o encontro casual de prova durante medida válida e delimitada.",
+      "É busca genérica por provas sem delimitação objetiva e justa causa prévia, incompatível com a lógica acusatória.",
+      "É técnica especial de investigação autorizada sem decisão judicial.",
+      "É a renovação de interceptação telefônica pelo prazo legal."
+    ]
+  },
+  q24: {
+    correctIndex: 3,
+    options: [
+      "Ambos tornam a prova automaticamente válida.",
+      "Serendipidade é investigação deliberada; desvio é descoberta casual.",
+      "Ambos descrevem a descoberta casual de fato diverso em medida válida.",
+      "Serendipidade é descoberta fortuita em medida válida; desvio é uso deliberado da medida para objeto estranho sem requisitos próprios."
+    ]
+  },
+  q25: {
+    correctIndex: 1,
+    options: [
+      "Prazo simples e intimação pela imprensa oficial.",
+      "Prazo em dobro e intimação pessoal, ressalvado o prazo próprio previsto em lei.",
+      "Prazo em quádruplo para contestar e em dobro para recorrer.",
+      "Somente intimação pessoal, sem prazo diferenciado."
+    ]
+  },
+  q26: {
+    correctIndex: 0,
+    options: [
+      "Fornece subsídios relevantes ao julgamento; sua admissão não altera a competência e seus recursos são limitados pelas regras legais.",
+      "Substitui uma das partes e passa a ter todos os poderes processuais.",
+      "Altera a competência para o tribunal e permite qualquer recurso.",
+      "Atua como perito obrigatório em causas de repercussão social."
+    ]
+  },
+  q27: {
+    correctIndex: 2,
+    options: [
+      "Constitucionalização é aplicar somente o CPC; contraditório formal e substancial são idênticos.",
+      "O contraditório formal exige influência real; o substancial exige apenas ciência.",
+      "Constitucionalização interpreta o processo pelos direitos fundamentais; o contraditório substancial inclui influência real e veda decisão-surpresa.",
+      "Constitucionalização elimina as regras processuais infraconstitucionais."
+    ]
+  },
+  q28: {
+    correctIndex: 3,
+    options: [
+      "O CPC prioriza exclusivamente a sentença judicial e rejeita soluções consensuais.",
+      "A função social autoriza afastar garantias processuais para obter resultados rápidos.",
+      "O sistema multiportas determina que todo conflito seja submetido à arbitragem.",
+      "O CPC incentiva métodos adequados e consensuais; a função social busca tutela efetiva, acesso à justiça e resultados socialmente justos."
+    ]
+  }
+};
+
+REVIEW_QUESTIONS.forEach((question) => Object.assign(question, REVIEW_OPTIONS[question.id]));
+
   </script>
   <script>
-const STORAGE_KEY = "yasmin-dpe-review-v1";
+const STORAGE_KEY = "yasmin-dpe-review-v2";
 
 const state = {
   mode: "all",
   queue: [],
   index: 0,
   results: {},
-  drafts: {},
+  choices: {},
 };
 
 const views = {
@@ -414,12 +677,12 @@ function loadState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (saved?.results) state.results = saved.results;
-    if (saved?.drafts) state.drafts = saved.drafts;
+    if (saved?.choices) state.choices = saved.choices;
   } catch (_) {}
 }
 
 function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ results: state.results, drafts: state.drafts }));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ results: state.results, choices: state.choices }));
 }
 
 function showView(name) {
@@ -430,9 +693,9 @@ function showView(name) {
 function startQuiz(mode = "all") {
   state.mode = mode;
   state.queue = mode === "retry"
-    ? REVIEW_QUESTIONS.filter((q) => ["wrong", "unsure"].includes(state.results[q.id]))
+    ? REVIEW_QUESTIONS.filter((question) => state.results[question.id] === "wrong")
     : [...REVIEW_QUESTIONS];
-  const firstUnanswered = state.queue.findIndex((q) => !state.results[q.id]);
+  const firstUnanswered = state.queue.findIndex((question) => !state.results[question.id]);
   state.index = mode === "all" && firstUnanswered >= 0 ? firstUnanswered : 0;
   if (!state.queue.length) return;
   showView("quiz");
@@ -441,34 +704,58 @@ function startQuiz(mode = "all") {
 
 function renderQuestion() {
   const question = state.queue[state.index];
-  const answered = state.index;
-  const percent = Math.round((answered / state.queue.length) * 100);
+  const percent = Math.round((state.index / state.queue.length) * 100);
   $("#progressText").textContent = `${state.index + 1} de ${state.queue.length}`;
   $("#progressPercent").textContent = `${percent}%`;
   $("#progressBar").style.width = `${percent}%`;
   $("#subjectBadge").textContent = question.subject;
   $("#questionText").textContent = question.question;
   $("#answerText").textContent = question.answer;
-  $("#answerInput").value = state.drafts[question.id] || "";
+  $("#choicesList").innerHTML = `<legend>Marque uma alternativa</legend>${question.options.map((option, optionIndex) => `
+    <label class="choice-card">
+      <input type="radio" name="answer" value="${optionIndex}" ${state.choices[question.id] === optionIndex ? "checked" : ""}>
+      <span class="choice-letter">${String.fromCharCode(65 + optionIndex)}</span>
+      <span class="choice-text">${option}</span>
+    </label>`).join("")}`;
+  $("#choiceHint").textContent = "";
   $("#answerPanel").classList.add("hidden");
-  $("#revealButton").classList.remove("hidden");
-  $("#answerInput").disabled = false;
+  $("#checkButton").classList.remove("hidden");
+  $("#choicesList").disabled = false;
+  $("#nextButton").textContent = state.index < state.queue.length - 1 ? "Próxima questão" : "Ver resultado";
+
+  document.querySelectorAll('input[name="answer"]').forEach((input) => input.addEventListener("change", (event) => {
+    state.choices[question.id] = Number(event.target.value);
+    saveState();
+    $("#choiceHint").textContent = "";
+  }));
 }
 
-function revealAnswer() {
+function checkAnswer() {
   const question = state.queue[state.index];
-  state.drafts[question.id] = $("#answerInput").value.trim();
+  const selected = state.choices[question.id];
+  if (!Number.isInteger(selected)) {
+    $("#choiceHint").textContent = "Escolha uma alternativa antes de corrigir.";
+    return;
+  }
+
+  const isCorrect = selected === question.correctIndex;
+  state.results[question.id] = isCorrect ? "correct" : "wrong";
   saveState();
+  document.querySelectorAll(".choice-card").forEach((card, optionIndex) => {
+    card.classList.toggle("is-correct", optionIndex === question.correctIndex);
+    card.classList.toggle("is-wrong", optionIndex === selected && !isCorrect);
+  });
+  $("#answerResult").textContent = isCorrect
+    ? "Acertou!"
+    : `A resposta correta é a alternativa ${String.fromCharCode(65 + question.correctIndex)}.`;
+  $("#answerResult").className = `answer-result ${isCorrect ? "correct" : "wrong"}`;
   $("#answerPanel").classList.remove("hidden");
-  $("#revealButton").classList.add("hidden");
-  $("#answerInput").disabled = true;
+  $("#checkButton").classList.add("hidden");
+  $("#choicesList").disabled = true;
   $("#answerPanel").scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
-function rateAnswer(rating) {
-  const question = state.queue[state.index];
-  state.results[question.id] = rating;
-  saveState();
+function nextQuestion() {
   if (state.index < state.queue.length - 1) {
     state.index += 1;
     renderQuestion();
@@ -478,32 +765,32 @@ function rateAnswer(rating) {
 }
 
 function finishQuiz() {
-  const ratings = state.queue.map((q) => state.results[q.id]);
-  const correct = ratings.filter((r) => r === "correct").length;
-  const retryCount = ratings.filter((r) => r === "wrong" || r === "unsure").length;
+  const ratings = state.queue.map((question) => state.results[question.id]);
+  const correct = ratings.filter((rating) => rating === "correct").length;
+  const retryCount = ratings.filter((rating) => rating === "wrong").length;
   $("#finishScore").textContent = `${correct}/${state.queue.length}`;
   $("#finishText").textContent = retryCount
     ? `Você separou ${retryCount} questão${retryCount === 1 ? "" : "ões"} para uma rodada de reforço.`
-    : "Nenhum erro ou hesitação nesta rodada.";
+    : "Nenhum erro nesta rodada.";
   $("#finishRetryButton").classList.toggle("hidden", retryCount === 0);
   showView("finish");
 }
 
 function renderHome() {
   const answered = Object.keys(state.results).length;
-  const correct = Object.values(state.results).filter((r) => r === "correct").length;
-  const retry = Object.values(state.results).filter((r) => r === "wrong" || r === "unsure").length;
+  const correct = Object.values(state.results).filter((rating) => rating === "correct").length;
+  const retry = Object.values(state.results).filter((rating) => rating === "wrong").length;
   $("#totalQuestions").textContent = REVIEW_QUESTIONS.length;
   $("#answeredCount").textContent = answered;
   $("#accuracyValue").textContent = answered ? `${Math.round((correct / answered) * 100)}%` : "—";
   $("#startButton").textContent = answered ? "Continuar revisão" : "Começar revisão";
   $("#retryButton").classList.toggle("hidden", retry === 0);
 
-  const subjects = [...new Set(REVIEW_QUESTIONS.map((q) => q.subject))];
+  const subjects = [...new Set(REVIEW_QUESTIONS.map((question) => question.subject))];
   $("#subjectSummary").innerHTML = subjects.map((subject) => {
-    const questions = REVIEW_QUESTIONS.filter((q) => q.subject === subject);
-    const subjectResults = questions.map((q) => state.results[q.id]).filter(Boolean);
-    const subjectCorrect = subjectResults.filter((r) => r === "correct").length;
+    const questions = REVIEW_QUESTIONS.filter((question) => question.subject === subject);
+    const subjectResults = questions.map((question) => state.results[question.id]).filter(Boolean);
+    const subjectCorrect = subjectResults.filter((rating) => rating === "correct").length;
     const percent = subjectResults.length ? Math.round((subjectCorrect / subjectResults.length) * 100) : 0;
     return `<div class="subject-row">
       <span class="subject-name">${subject}</span>
@@ -521,25 +808,19 @@ function goHome() {
 function resetProgress() {
   if (!window.confirm("Apagar todas as respostas e recomeçar a revisão?")) return;
   state.results = {};
-  state.drafts = {};
+  state.choices = {};
   localStorage.removeItem(STORAGE_KEY);
   goHome();
 }
 
 $("#startButton").addEventListener("click", () => startQuiz("all"));
 $("#retryButton").addEventListener("click", () => startQuiz("retry"));
-$("#revealButton").addEventListener("click", revealAnswer);
+$("#checkButton").addEventListener("click", checkAnswer);
+$("#nextButton").addEventListener("click", nextQuestion);
 $("#backButton").addEventListener("click", goHome);
 $("#finishHomeButton").addEventListener("click", goHome);
 $("#finishRetryButton").addEventListener("click", () => startQuiz("retry"));
 $("#resetButton").addEventListener("click", resetProgress);
-document.querySelectorAll(".rating-button").forEach((button) => button.addEventListener("click", () => rateAnswer(button.dataset.rating)));
-$("#answerInput").addEventListener("input", (event) => {
-  const question = state.queue[state.index];
-  if (!question) return;
-  state.drafts[question.id] = event.target.value;
-  saveState();
-});
 
 loadState();
 renderHome();
